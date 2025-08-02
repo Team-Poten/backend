@@ -60,3 +60,4 @@ docker-compose.yml
 
 # Environment variables
 .env
+application.yml
