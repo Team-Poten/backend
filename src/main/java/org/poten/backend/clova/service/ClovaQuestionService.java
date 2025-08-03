@@ -64,15 +64,17 @@ public class ClovaQuestionService {
 
             List<QuestionDto> questionDtos = objectMapper.readValue(jsonContent, new com.fasterxml.jackson.core.type.TypeReference<List<QuestionDto>>() {});
 
-            saveQuestions(questionDtos, user);
+            List<Question> savedQuestions = saveQuestions(questionDtos, user);
 
-            return questionDtos;
+            return savedQuestions.stream()
+                    .map(QuestionDto::from)
+                    .collect(Collectors.toList());
         } catch (IOException e) {
             throw new ClovaQuestionServiceException(ClovaQuestionServiceErrorCode.CLOVA_API_ERROR);
         }
     }
 
-    private void saveQuestions(List<QuestionDto> questionDtos, User user) {
+    private List<Question> saveQuestions(List<QuestionDto> questionDtos, User user) {
         List<Question> questions = questionDtos.stream()
                 .map(questionDto -> Question.builder()
                         .questionText(questionDto.getQuestion())
@@ -82,7 +84,7 @@ public class ClovaQuestionService {
                         .user(user)
                         .build())
                 .collect(Collectors.toList());
-        questionRepository.saveAll(questions);
+        return questionRepository.saveAll(questions);
     }
 
     private String createClovaRequestBody(String plainText, String type) {
