@@ -20,6 +20,11 @@ import java.util.List;
 @Entity
 @Table(name = "question")
 public class Question extends BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     @Column(nullable = false)
     private String questionText;
 
