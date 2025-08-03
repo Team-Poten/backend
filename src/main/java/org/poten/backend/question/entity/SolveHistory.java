@@ -27,4 +27,8 @@ public class SolveHistory extends BaseEntity {
 
     @Column(nullable = false)
     private Boolean isTrue;
+
+    /* 사용자 응답 추가 */
+    @Column(nullable = false)
+    private String user_answer;
 }
