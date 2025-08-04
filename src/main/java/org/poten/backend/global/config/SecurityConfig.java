@@ -32,7 +32,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/user/signup",
                                 "api/user/login",
-                                "/oauth2/**"
+                                "/oauth2/**",
+                                "/api/v1/clova/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
