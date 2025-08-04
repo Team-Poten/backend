@@ -38,8 +38,11 @@ public class Question extends BaseEntity {
     private String explanation;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = true) // 비회원은 null
     private User user;
+
+    @Column(nullable = false)
+    private Boolean guest = false; //  비회원용 문제 여부
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SolveHistory> solveHistories = new ArrayList<>();
