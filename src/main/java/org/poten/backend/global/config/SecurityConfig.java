@@ -33,6 +33,7 @@ public class SecurityConfig {
                                 "/api/user/signup",
                                 "api/user/login",
                                 "/oauth2/**",
+                                "/api/questions/*/guest-answer",
                                 "/api/v1/clova/**"
                         ).permitAll()
                         .anyRequest().authenticated()

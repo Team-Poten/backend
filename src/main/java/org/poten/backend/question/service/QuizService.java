@@ -46,6 +46,25 @@ public class QuizService {
         return res;
     }
 
+    /* 비회원 전용 로직 */
+    public AnswerResponse submitAnswerWithoutSave(Long questionId, AnswerRequest req) {
+        Question q = questionRepo.findById(questionId)
+                .orElseThrow(() -> new IllegalArgumentException("question not found: " + questionId));
+
+        String normalizedUser = normalize(req.getUserAnswer());
+        String normalizedAnswer = normalize(q.getAnswer());
+
+        boolean correct = normalizedUser.equalsIgnoreCase(normalizedAnswer);
+
+        AnswerResponse res = new AnswerResponse();
+        res.setCorrect(correct);
+        res.setCorrectAnswer(normalizedAnswer);
+        res.setExplanation(q.getExplanation());
+        res.setQuestionId(q.getId());
+        return res;
+    }
+
+
     private String normalize(String a) {
         if (a == null) return "";
         String s = a.trim().toUpperCase();

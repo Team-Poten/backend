@@ -36,5 +36,12 @@ public class QuizController {
 
         return quizService.submitAnswer(userId, questionId, req);
     }
+
+    @PostMapping("/{id}/guest-answer")
+    public AnswerResponse guestAnswer(@PathVariable("id") Long questionId,
+                                      @RequestBody AnswerRequest req) {
+        return quizService.submitAnswerWithoutSave(questionId, req);
+    }
+
 }
 
