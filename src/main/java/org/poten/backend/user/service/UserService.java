@@ -18,4 +18,5 @@ public interface UserService {
 
     TokenRefreshResponseDto reissueAccessToken(TokenRefreshRequestDto requestDto);
 
+    boolean checkLoginIdDuplicate(String nickname);
 }
