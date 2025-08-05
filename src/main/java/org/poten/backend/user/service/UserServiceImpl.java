@@ -24,6 +24,11 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final RefreshTokenRepository refreshTokenRepository;
+
+    public boolean checkLoginIdDuplicate(String loginId) {
+        return userRepository.existsByLoginId(loginId);
+    }
+
     @Override
     public void signup(UserSignupRequestDto requestDto) {
         if(userRepository.findByLoginId(requestDto.getLoginId()).isPresent()){

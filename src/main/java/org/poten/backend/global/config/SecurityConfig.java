@@ -37,6 +37,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/user/signup",
                                 "api/user/login",
+                                "api/user/check-id",
                                 "/oauth2/**",
                                 "/api/questions/*/guest-answer",
                                 "/api/v1/clova/**"

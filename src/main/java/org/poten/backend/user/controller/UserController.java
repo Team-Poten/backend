@@ -39,5 +39,12 @@ public class UserController {
         userService.delete(loginId);
         return ResponseEntity.ok("탈퇴 완료");
     }
+    @GetMapping("/check-id")
+    public ResponseEntity<Boolean> checkLoginIdDuplicate(@RequestParam String loginId) {
+        boolean isDuplicate = userService.checkLoginIdDuplicate(loginId);
+        return ResponseEntity.ok(isDuplicate);
+    }
+
+
 
 }
