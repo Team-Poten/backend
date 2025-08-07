@@ -1,5 +1,6 @@
 package org.poten.backend.clova.dto.response;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,6 +19,9 @@ public class QuestionDto {
     private List<String> options;
     private String answer;
     private String explanation;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
 
     public static QuestionDto from(Question question) {
         return new QuestionDto(
@@ -26,7 +30,9 @@ public class QuestionDto {
                 question.getQuestionType(),
                 Collections.emptyList(),
                 question.getAnswer(),
-                question.getExplanation()
+                question.getExplanation(),
+                question.getCreatedAt(),
+                question.getUpdatedAt()
         );
     }
 }

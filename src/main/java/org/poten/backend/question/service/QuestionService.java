@@ -1,17 +1,13 @@
 package org.poten.backend.question.service;
 
-import org.poten.backend.global.error.ErrorCode;
-import lombok.Getter;
+import org.poten.backend.clova.dto.response.QuestionDto;
 import lombok.RequiredArgsConstructor;
 import org.poten.backend.global.error.GlobalErrorCode;
 import org.poten.backend.global.exception.CustomException;
-import org.poten.backend.global.exception.CustomException;
 import org.poten.backend.question.dto.response.QuestionListResponse;
-import org.poten.backend.question.dto.response.QuestionResponse;
 import org.poten.backend.question.entity.Question;
 import org.poten.backend.question.repository.QuestionRepository;
 import org.poten.backend.user.entity.User;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,10 +30,10 @@ public class QuestionService {
 
         List<Question> questions = questionRepository.findByUser(user);
 
-        Map<LocalDate, List<QuestionResponse>> groupedByDate = questions.stream()
+        Map<LocalDate, List<QuestionDto>> groupedByDate = questions.stream()
                 .collect(Collectors.groupingBy(
                         question -> question.getCreatedAt().toLocalDate(),
-                        Collectors.mapping(QuestionResponse::from, Collectors.toList())
+                        Collectors.mapping(QuestionDto::from, Collectors.toList())
                 ));
 
         return groupedByDate.entrySet().stream()

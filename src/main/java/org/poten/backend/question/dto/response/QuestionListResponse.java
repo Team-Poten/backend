@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.List;
+import org.poten.backend.clova.dto.response.QuestionDto;
 
 @Data
 @Builder
@@ -14,5 +15,5 @@ import java.util.List;
 @AllArgsConstructor
 public class QuestionListResponse {
     private LocalDate date;
-    private List<QuestionResponse> questions;
+    private List<QuestionDto> questions;
 }
