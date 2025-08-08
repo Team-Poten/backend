@@ -2,9 +2,9 @@ spring:
   application:
     name: spring-security-example
   datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+    url: jdbc:mysql://db-36mrt5-kr.vpc-pub-cdb.ntruss.com:3306/poten17 #${SPRING_DATASOURCE_URL}
+    username: poten17 #${SPRING_DATASOURCE_USERNAME}
+    password: potenday17! #${SPRING_DATASOURCE_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: update
@@ -12,3 +12,14 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+
+jwt:
+  secret: "8d17tj/Sw/H5+hr//0bhn+hADOtnnhVPVlSRnQr1c9WFoC5o+cZOkDMM0obSZfNxDl4Q6VZrhVS93fRjkD8IQw==" #${JWT_SECRET}
+  expiration: 3600000
+
+clova:
+  api:
+    url: https://clovastudio.stream.ntruss.com/v3/chat-completions/HCX-005
+    key: nv-e5fb8d7ef38140bb81b0b5631a2bd0c6QJy7
+    id: a528cdb19fab4508bdb58450652c14ae
