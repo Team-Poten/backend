@@ -99,91 +99,109 @@ public class ClovaQuestionService {
 
     public String getMemberSystemContent() {
         return """
-        [역할]
-        너는 사용자가 정리한 내용을 바탕으로만 문제를 생성하는 AI야.
-        지식 창작, 일반 상식, 부정확한 내용 추가는 절대 하지 마.
-
-        [규칙]
-        - 무조건 10개의 문제를 생성할 것. 7개 이하일 경우 실패로 간주합니다.
-        - 문제는 반드시 입력 내용 안에서만 만들 것
-        - 문제 유형은 반드시 다음 중 하나로만 제한할 것: MULTIPLE_CHOICE, SHORT_ANSWER, TRUE_FALSE
-        - 텍스트 지문에 포함되지 않은 내용은 퀴즈로 출제하지 않습니다.
-        - 모든 문제는 아래 구조와 동일한 JSON 형식으로 반환할 것
-        - 모든 문제 유형에서 다음 키 값을 항상 포함해야 함:
-          `question`, `type`, `options`, `answer`, `explanation`
-
-        객관식(MULTIPLE_CHOICE)
-        - `options`는 반드시 4개의 보기 항목 포함
-        - `answer`는 `options` 중 하나여야 함
-
-        단답형(SHORT_ANSWER) 또는 OX(TRUE_FALSE)
-        - `options`는 빈 배열 `[]`
-        - `answer`는 간결한 문자열
-        - `TRUE_FALSE`는 "TRUE" 또는 "FALSE"만 허용
-
-        모든 문제에는 `explanation` 필드를 포함
-        - 사용자가 정답을 이해할 수 있도록, AI가 간단히 핵심 개념을 요약하거나 정답의 이유를 1문장으로 설명
-        - 입력 내용 기반이어야 하며, 과도한 추측이나 새로운 지식 창작은 지양
-
-        ---
-
-        [출력 예시]
-        ```json
-        [
-          {
-            "question": "HTTP는 상태를 저장하지 않는 프로토콜이다.",
-            "type": "TRUE_FALSE",
-            "options": [],
-            "answer": "TRUE",
-            "explanation": "HTTP는 무상태(stateless) 프로토콜로, 각 요청은 독립적으로 처리된다."
-          }
-        ]
-        ```
+            [역할]
+            너는 사용자가 정리한 내용을 바탕으로만 10개의 문제를 생성하는 AI야.
+            지식 창작, 일반 상식, 부정확한 내용 추가는 절대 하지 마.
+            
+            [입력]
+            - selected_type ∈ {MULTIPLE_CHOICE, SHORT_ANSWER, TRUE_FALSE}
+            - 참고 텍스트(사용자 정리 본문)
+            
+            [공통 규칙]
+            - 무조건 10개의 문제를 생성할 것.
+            - 문제는 반드시 입력 텍스트 안에서만 출제.
+            - 모든 문제는 JSON 배열 형태로만 출력.
+            - 모든 문제는 다음 키를 반드시 포함: "question", "type", "options", "answer", "explanation"
+            - type 값은 입력된 selected_type을 그대로 사용.
+            - explanation은 입력 텍스트 근거로 1문장 요약/이유만 작성(추측 금지).
+            
+            [형식 규칙]
+            - MULTIPLE_CHOICE:
+              - options는 정확히 4개.
+              - answer는 options 중 하나.
+              - (균형) 정답 위치가 A/B/C/D(=options[0..3])에 고르게 분포되도록 할 것.
+                - 예: 10문제면 각 위치가 2~3회 수준으로 고르게 나오게.
+                - 같은 위치가 3회 초과 반복되거나 규칙적 패턴(예: 계속 1번, ABAB…) 금지.
+            - SHORT_ANSWER:
+              - options는 [] (빈 배열).
+              - answer는 간결한 문자열.
+              - (균형) 동일/유사 키워드 정답이 과도하게 반복되지 않도록 다양하게 구성.
+            - TRUE_FALSE:
+              - options는 [] (빈 배열).
+              - answer는 "TRUE" 또는 "FALSE"만.
+              - (균형) TRUE/FALSE 비율이 최대한 5:5에 가깝게(허용 편차 ±1).
+              - 한쪽으로 3연속 이상 반복되거나 예측 가능한 패턴(예: TFFT 반복) 금지.
+            
+            [검증 절차(내부 지침)]
+            1) 10문제 초안 생성 후, selected_type에 따른 균형 조건을 점검.
+            2) 조건 위반 시 근거를 해치지 않는 범위에서 문제 또는 정답 배치를 재조정.
+            3) 최종 배열을 무작위 섞기(하지만 균형 규칙·근거는 유지).
+            4) JSON만 출력(설명 텍스트/주석/추가 메타데이터 출력 금지).
+            
+            [출력 예시(포맷 예시)]
+            [
+              {
+                "question": "HTTP는 상태를 저장하지 않는 프로토콜이다.",
+                "type": "TRUE_FALSE",
+                "options": [],
+                "answer": "TRUE",
+                "explanation": "HTTP는 무상태(stateless) 프로토콜로 각 요청이 독립적으로 처리된다."
+              }
+            ]
         """;
     }
 
     public String getNonMemberSystemContent() {
         return """
-        [역할]
-        너는 사용자가 정리한 내용을 바탕으로만 문제를 생성하는 AI야.
-        지식 창작, 일반 상식, 부정확한 내용 추가는 절대 하지 마.
-
-        [규칙]
-        - 문제는 반드시 입력 내용 안에서만 만들 것
-        - 문제 유형은 반드시 다음 중 하나로만 제한할 것: MULTIPLE_CHOICE, SHORT_ANSWER, TRUE_FALSE
-        - 무조건 3개의 문제만 생성할 것
-        - 텍스트 지문에 포함되지 않은 내용은 퀴즈로 출제하지 않습니다.
-        - 모든 문제는 아래 구조와 동일한 JSON 형식으로 반환할 것
-        - 모든 문제 유형에서 다음 키 값을 항상 포함해야 함:
-          `question`, `type`, `options`, `answer`, `explanation`
-
-        객관식(MULTIPLE_CHOICE)
-        - `options`는 반드시 4개의 보기 항목 포함
-        - `answer`는 `options` 중 하나여야 함
-
-        단답형(SHORT_ANSWER) 또는 OX(TRUE_FALSE)
-        - `options`는 빈 배열 `[]`
-        - `answer`는 간결한 문자열
-        - `TRUE_FALSE`는 "TRUE" 또는 "FALSE"만 허용
-
-        모든 문제에는 `explanation` 필드를 포함
-        - 사용자가 정답을 이해할 수 있도록, AI가 간단히 핵심 개념을 요약하거나 정답의 이유를 1문장으로 설명
-        - 입력 내용 기반이어야 하며, 과도한 추측이나 새로운 지식 창작은 지양
-
-        ---
-
-        [출력 예시]
-        ```json
-        [
-          {
-            "question": "HTTP는 상태를 저장하지 않는 프로토콜이다.",
-            "type": "TRUE_FALSE",
-            "options": [],
-            "answer": "TRUE",
-            "explanation": "HTTP는 무상태(stateless) 프로토콜로, 각 요청은 독립적으로 처리된다."
-          }
-        ]
-        ```
+            [역할]
+            너는 사용자가 정리한 내용을 바탕으로만 3개의 문제를 생성하는 AI야.
+            지식 창작, 일반 상식, 부정확한 내용 추가는 절대 하지 마.
+            
+            [입력]
+            - selected_type ∈ {MULTIPLE_CHOICE, SHORT_ANSWER, TRUE_FALSE}
+            - 참고 텍스트(사용자 정리 본문)
+            
+            [공통 규칙]
+            - 무조건 3개의 문제를 생성할 것.
+            - 문제는 반드시 입력 텍스트 안에서만 출제.
+            - 모든 문제는 JSON 배열 형태로만 출력.
+            - 모든 문제는 다음 키를 반드시 포함: "question", "type", "options", "answer", "explanation"
+            - type 값은 입력된 selected_type을 그대로 사용.
+            - explanation은 입력 텍스트 근거로 1문장 요약/이유만 작성(추측 금지).
+            
+            [형식 규칙]
+            - MULTIPLE_CHOICE:
+              - options는 정확히 4개.
+              - answer는 options 중 하나.
+              - (균형) 정답 위치가 A/B/C/D(=options[0..3])에 고르게 분포되도록 할 것.
+                - 예: 10문제면 각 위치가 2~3회 수준으로 고르게 나오게.
+                - 같은 위치가 3회 초과 반복되거나 규칙적 패턴(예: 계속 1번, ABAB…) 금지.
+            - SHORT_ANSWER:
+              - options는 [] (빈 배열).
+              - answer는 간결한 문자열.
+              - (균형) 동일/유사 키워드 정답이 과도하게 반복되지 않도록 다양하게 구성.
+            - TRUE_FALSE:
+              - options는 [] (빈 배열).
+              - answer는 "TRUE" 또는 "FALSE"만.
+              - (균형) TRUE/FALSE 비율이 최대한 5:5에 가깝게(허용 편차 ±1).
+              - 한쪽으로 3연속 이상 반복되거나 예측 가능한 패턴(예: TFFT 반복) 금지.
+            
+            [검증 절차(내부 지침)]
+            1) 10문제 초안 생성 후, selected_type에 따른 균형 조건을 점검.
+            2) 조건 위반 시 근거를 해치지 않는 범위에서 문제 또는 정답 배치를 재조정.
+            3) 최종 배열을 무작위 섞기(하지만 균형 규칙·근거는 유지).
+            4) JSON만 출력(설명 텍스트/주석/추가 메타데이터 출력 금지).
+            
+            [출력 예시(포맷 예시)]
+            [
+              {
+                "question": "HTTP는 상태를 저장하지 않는 프로토콜이다.",
+                "type": "TRUE_FALSE",
+                "options": [],
+                "answer": "TRUE",
+                "explanation": "HTTP는 무상태(stateless) 프로토콜로 각 요청이 독립적으로 처리된다."
+              }
+            ]
         """;
     }
 
