@@ -40,7 +40,8 @@ public class SecurityConfig {
                                 "api/user/check-id",
                                 "/oauth2/**",
                                 "/api/questions/*/guest-answer",
-                                "/api/v1/clova/**"
+                                "/api/v1/clova/**",
+                                "/api/health"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
