@@ -100,7 +100,7 @@ public class ClovaQuestionService {
     public String getMemberSystemContent() {
         return """
         [역할]
-        너는 사용자가 정리한 내용을 바탕으로만 문제를 생성하는 AI야.
+        너는 사용자가 정리한 내용을 바탕으로만 10개의 문제를 생성하는 AI야.
         지식 창작, 일반 상식, 부정확한 내용 추가는 절대 하지 마.
 
         [규칙]
@@ -165,6 +165,7 @@ public class ClovaQuestionService {
         - `options`는 빈 배열 `[]`
         - `answer`는 간결한 문자열
         - `TRUE_FALSE`는 "TRUE" 또는 "FALSE"만 허용
+        - 답의 비율은 "TRUE", "FALSE" 50:50으로 나오도록 문제 제작
 
         모든 문제에는 `explanation` 필드를 포함
         - 사용자가 정답을 이해할 수 있도록, AI가 간단히 핵심 개념을 요약하거나 정답의 이유를 1문장으로 설명

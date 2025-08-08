@@ -12,10 +12,9 @@ public class ClovaRequest {
     private double topP = 0.8;
     private int topK = 0;
     private int maxTokens = 2000;
-    private double temperature = 0.3;
-    private double repetitionPenalty = 1.0;
+    private double temperature = 0.5;
+    private double repetitionPenalty = 0.5;
     private List<String> stop = List.of();
-    private int seed = 0;
     private boolean includeAiFilters = true;
 
     public ClovaRequest(List<Message> messages) {
