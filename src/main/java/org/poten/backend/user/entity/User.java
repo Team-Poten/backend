@@ -26,7 +26,11 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(
+        nullable = false,
+        unique = true,
+        columnDefinition = "varchar(255) collate utf8mb4_bin"
+    )
     private String loginId;
 
     @Column(nullable = false)
