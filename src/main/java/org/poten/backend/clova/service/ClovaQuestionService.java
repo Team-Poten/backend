@@ -22,6 +22,7 @@ import lombok.Getter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.poten.backend.global.infra.clova.OkHttpRequest.createRequest;
@@ -68,7 +69,7 @@ public class ClovaQuestionService {
             List<Question> savedQuestions = saveQuestions(questionDtos, user);
 
             return savedQuestions.stream()
-                    .map(QuestionDto::from)
+                    .map(question -> QuestionDto.from(question, Optional.empty()))
                     .collect(Collectors.toList());
         } catch (IOException e) {
             throw new ClovaQuestionServiceException(ClovaQuestionServiceErrorCode.CLOVA_API_ERROR);

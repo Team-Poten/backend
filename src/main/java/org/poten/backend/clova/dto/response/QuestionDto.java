@@ -1,13 +1,14 @@
 package org.poten.backend.clova.dto.response;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.poten.backend.question.entity.Question;
-
-import java.util.List;
+import org.poten.backend.question.entity.SolveHistory;
 
 @Getter
 @NoArgsConstructor
@@ -21,9 +22,13 @@ public class QuestionDto {
     private String explanation;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String latestSolveStatus;
 
+    public static QuestionDto from(Question question, Optional<SolveHistory> solveHistory) {
+        String status = solveHistory
+                .map(history -> history.getIsTrue() ? "CORRECT" : "INCORRECT")
+                .orElse("UNSOLVED");
 
-    public static QuestionDto from(Question question) {
         return new QuestionDto(
                 question.getId(),
                 question.getQuestionText(),
@@ -32,7 +37,8 @@ public class QuestionDto {
                 question.getAnswer(),
                 question.getExplanation(),
                 question.getCreatedAt(),
-                question.getUpdatedAt()
+                question.getUpdatedAt(),
+                status
         );
     }
 }
