@@ -28,7 +28,7 @@ public class QuestionDto {
                 question.getId(),
                 question.getQuestionText(),
                 question.getQuestionType(),
-                Collections.emptyList(),
+                question.getOptions(),
                 question.getAnswer(),
                 question.getExplanation(),
                 question.getCreatedAt(),
