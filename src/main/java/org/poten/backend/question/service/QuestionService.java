@@ -6,7 +6,9 @@ import org.poten.backend.global.error.GlobalErrorCode;
 import org.poten.backend.global.exception.CustomException;
 import org.poten.backend.question.dto.response.QuestionListResponse;
 import org.poten.backend.question.entity.Question;
+import org.poten.backend.question.entity.SolveHistory;
 import org.poten.backend.question.repository.QuestionRepository;
+import org.poten.backend.question.repository.SolveHistoryRepository;
 import org.poten.backend.user.entity.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,6 +26,7 @@ import java.util.stream.Collectors;
 public class QuestionService {
 
     private final QuestionRepository questionRepository;
+    private final SolveHistoryRepository solveHistoryRepository;
 
     public List<QuestionListResponse> findAllQuestion(User user) {
         if (user == null) {
@@ -29,11 +34,16 @@ public class QuestionService {
         }
 
         List<Question> questions = questionRepository.findByUser(user);
+        List<SolveHistory> latestSolveHistories = solveHistoryRepository.findLatestSolveHistories(user, questions);
+
+        Map<Question, SolveHistory> solveHistoryMap = latestSolveHistories.stream()
+                .collect(Collectors.toMap(SolveHistory::getQuestion, Function.identity()));
 
         Map<LocalDate, List<QuestionDto>> groupedByDate = questions.stream()
                 .collect(Collectors.groupingBy(
                         question -> question.getCreatedAt().toLocalDate(),
-                        Collectors.mapping(QuestionDto::from, Collectors.toList())
+                        Collectors.mapping(question -> QuestionDto.from(question, Optional.ofNullable(solveHistoryMap.get(question))),
+                                Collectors.toList())
                 ));
 
         return groupedByDate.entrySet().stream()
