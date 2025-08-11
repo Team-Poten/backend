@@ -25,22 +25,21 @@ public class QuizService {
         Question q = questionRepo.findById(questionId)
                 .orElseThrow(() -> new IllegalArgumentException("question not found: " + questionId));
 
-        String normalizedUser = normalize(req.getUserAnswer());
-        String normalizedAnswer = normalize(q.getAnswer());
 
-        boolean correct = normalizedUser.equalsIgnoreCase(normalizedAnswer);
+
+        boolean correct = isCorrect(q,req.getUserAnswer());
 
         SolveHistory h = new SolveHistory();
         h.setUser(userRepo.getReferenceById(userId));
         h.setQuestion(q);
         h.setIsTrue(correct);
-        h.setUser_answer(normalizedUser);
+        h.setUser_answer(req.getUserAnswer());
 
         historyRepo.save(h);
 
         AnswerResponse res = new AnswerResponse();
         res.setCorrect(correct);
-        res.setCorrectAnswer(normalizedAnswer);
+        res.setCorrectAnswer(q.getAnswer());
         res.setExplanation(q.getExplanation());
         res.setQuestionId(q.getId());
         return res;
@@ -51,25 +50,27 @@ public class QuizService {
         Question q = questionRepo.findById(questionId)
                 .orElseThrow(() -> new IllegalArgumentException("question not found: " + questionId));
 
-        String normalizedUser = normalize(req.getUserAnswer());
-        String normalizedAnswer = normalize(q.getAnswer());
 
-        boolean correct = normalizedUser.equalsIgnoreCase(normalizedAnswer);
+        boolean correct = isCorrect(q,req.getUserAnswer());
 
         AnswerResponse res = new AnswerResponse();
         res.setCorrect(correct);
-        res.setCorrectAnswer(normalizedAnswer);
+        res.setCorrectAnswer(q.getAnswer());
         res.setExplanation(q.getExplanation());
         res.setQuestionId(q.getId());
         return res;
     }
 
+    private boolean isCorrect(Question q, String userInputRaw){
+        String userAN = normalizeText(userInputRaw);
+        return userAN.equals(q.getAnswer());
 
-    private String normalize(String a) {
-        if (a == null) return "";
-        String s = a.trim().toUpperCase();
-        if ("O".equals(s) || "TRUE".equals(s))  return "TRUE";
-        if ("X".equals(s) || "FALSE".equals(s)) return "FALSE";
-        throw new IllegalArgumentException("answer must be O/X/TRUE/FALSE");
+    }
+
+
+
+    private String normalizeText(String a){
+        if(a== null) return "";
+        return a.trim().toUpperCase();
     }
 }
