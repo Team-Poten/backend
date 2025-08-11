@@ -83,6 +83,7 @@ public class ClovaQuestionService {
                         .answer(questionDto.getAnswer())
                         .questionType(questionDto.getType())
                         .explanation(questionDto.getExplanation())
+                        .options(questionDto.getOptions())
                         .user(user)
                         .guest(guset)
                         .build())
