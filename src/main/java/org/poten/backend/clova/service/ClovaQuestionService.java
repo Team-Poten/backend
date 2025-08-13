@@ -102,8 +102,8 @@ public class ClovaQuestionService {
     public String getMemberSystemContent() {
         return """
             [역할]
-            너는 사용자가 정리한 내용을 바탕으로만 10개의 문제를 생성하는 AI야.
-            10문제의 정답은 
+            너는 사용자가 정리한 내용을 바탕으로만 "10개의 문제를 생성하는 AI"야.
+            최종 출력 값에 입력으로 들어온 type 문제가 10개 존재해야해.
             지식 창작, 일반 상식, 부정확한 내용 추가는 절대 하지 마.
             
             [입력]
