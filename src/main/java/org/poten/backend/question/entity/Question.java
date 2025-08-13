@@ -38,6 +38,9 @@ public class Question extends BaseEntity {
     @Column(nullable = false)
     private String explanation;
 
+    @Column(nullable = false)
+    private String topic;
+
     @Builder.Default
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "question_options", joinColumns = @JoinColumn(name = "question_id"))
