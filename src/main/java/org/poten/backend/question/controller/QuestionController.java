@@ -28,4 +28,14 @@ public class QuestionController {
         }
         return ResponseEntity.ok(questionService.findAllQuestion(customUserDetails.getUser()));
     }
+
+    @GetMapping("/wrong")
+    public ResponseEntity<List<QuestionListResponse>> findLatestIncorrectByCreatedDate(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) throw new CustomException(GlobalErrorCode.REFRESH_TOKEN_MISMATCH);
+        return ResponseEntity.ok(
+                questionService.findLatestIncorrectByCreatedDate(userDetails.getUser())
+        );
+    }
+
 }

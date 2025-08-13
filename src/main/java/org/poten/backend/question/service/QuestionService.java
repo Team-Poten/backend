@@ -53,4 +53,40 @@ public class QuestionService {
                         .build())
                 .collect(Collectors.toList());
     }
+    @Transactional(readOnly = true)
+    public List<QuestionListResponse> findLatestIncorrectByCreatedDate(User user) {
+        if (user == null) throw new CustomException(GlobalErrorCode.USER_NOT_FOUND);
+
+
+        List<Question> questions = questionRepository.findByUser(user);
+
+
+        List<SolveHistory> latestIncorrect = solveHistoryRepository
+                .findLatestIncorrectSolveHistories(user, questions);
+
+        Map<Question, SolveHistory> shMap = latestIncorrect.stream()
+                .collect(Collectors.toMap(SolveHistory::getQuestion, Function.identity()));
+
+
+        Map<LocalDate, List<Question>> grouped = questions.stream()
+                .filter(shMap::containsKey) // 최신 풀이가 오답인 문제만
+                .collect(Collectors.groupingBy(q -> q.getCreatedAt().toLocalDate()));
+
+
+        return grouped.entrySet().stream()
+                .map(entry -> {
+                    List<QuestionDto> dtos = entry.getValue().stream()
+                            .sorted((a, b) -> shMap.get(b).getCreatedAt()
+                                    .compareTo(shMap.get(a).getCreatedAt()))
+                            .map(q -> QuestionDto.from(q, Optional.of(shMap.get(q))))
+                            .collect(Collectors.toList());
+                    return QuestionListResponse.builder()
+                            .date(entry.getKey())
+                            .questions(dtos)
+                            .build();
+                })
+                .sorted((a, b) -> b.getDate().compareTo(a.getDate()))
+                .collect(Collectors.toList());
+    }
+
 }

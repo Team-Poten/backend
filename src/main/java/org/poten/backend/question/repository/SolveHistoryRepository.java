@@ -17,5 +17,13 @@ public interface SolveHistoryRepository extends JpaRepository<SolveHistory, Long
 
     @Query("SELECT sh FROM SolveHistory sh WHERE sh.user = :user AND sh.question IN :questions AND sh.createdAt = (SELECT MAX(sh2.createdAt) FROM SolveHistory sh2 WHERE sh2.user = sh.user AND sh2.question = sh.question)")
     List<SolveHistory> findLatestSolveHistories(@Param("user") User user, @Param("questions") List<Question> questions);
+
+    @Query("""
+    SELECT sh FROM SolveHistory sh WHERE sh.user = :user AND sh.question IN :questions AND sh.createdAt = (SELECT MAX(sh2.createdAt) FROM SolveHistory sh2 WHERE sh2.user = sh.user AND sh2.question = sh.question)
+    AND sh.isTrue = false
+    """)
+    List<SolveHistory> findLatestIncorrectSolveHistories(@Param("user") User user, @Param("questions") List<Question> questions);
+
+
 }
 
