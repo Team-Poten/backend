@@ -23,6 +23,7 @@ public class QuestionDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String latestSolveStatus;
+    private String topic;
 
     public static QuestionDto from(Question question, Optional<SolveHistory> solveHistory) {
         String status = solveHistory
@@ -38,7 +39,8 @@ public class QuestionDto {
                 question.getExplanation(),
                 question.getCreatedAt(),
                 question.getUpdatedAt(),
-                status
+                status,
+                question.getTopic()
         );
     }
 }
