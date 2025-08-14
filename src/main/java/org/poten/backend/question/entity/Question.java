@@ -38,7 +38,7 @@ public class Question extends BaseEntity {
     @Column(nullable = false)
     private String explanation;
 
-    @Column(nullable = false)
+    @Column(nullable = true) // 배포 이슈로 임시 수정
     private String topic;
 
     @Builder.Default
