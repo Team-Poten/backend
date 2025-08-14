@@ -1,6 +1,7 @@
 package org.poten.backend.clova.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import okhttp3.*;
@@ -23,7 +24,11 @@ public class ClovaOcrService {
 
     private final OcrProperty ocrProperty;
     private final ObjectMapper objectMapper;
-    private final OkHttpClient client = new OkHttpClient();
+    private final OkHttpClient client = new OkHttpClient.Builder()
+        .connectTimeout(120, TimeUnit.SECONDS)
+        .writeTimeout(120, TimeUnit.SECONDS)
+        .readTimeout(120, TimeUnit.SECONDS)
+        .build();
 
     public OcrResponseDto extractTextFromImage(MultipartFile imageFile) {
         try {
