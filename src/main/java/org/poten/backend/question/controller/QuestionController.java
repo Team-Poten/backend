@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.poten.backend.global.error.GlobalErrorCode;
 import org.poten.backend.global.exception.CustomException;
 import org.poten.backend.question.dto.response.QuestionListResponse;
+import org.poten.backend.question.dto.response.QuestionTopicResponse;
 import org.poten.backend.question.service.QuestionService;
 import org.poten.backend.question.service.QuestionTopicService;
 import org.poten.backend.global.security.CustomUserDetails;
@@ -49,4 +50,14 @@ public class QuestionController {
         questionTopicService.updateQuestionTopic(requestDto);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/wrong/topic")
+    public ResponseEntity<List<QuestionTopicResponse>> findLatestIncorrectByTopic(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) throw new CustomException(GlobalErrorCode.REFRESH_TOKEN_MISMATCH);
+        return ResponseEntity.ok(
+                questionService.findLatestIncorrectByTopic(userDetails.getUser())
+        );
+    }
+
 }
