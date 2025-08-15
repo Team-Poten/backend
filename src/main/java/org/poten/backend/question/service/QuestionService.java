@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.poten.backend.global.error.GlobalErrorCode;
 import org.poten.backend.global.exception.CustomException;
 import org.poten.backend.question.dto.response.QuestionListResponse;
+import org.poten.backend.question.dto.response.QuestionTopicResponse;
 import org.poten.backend.question.entity.Question;
 import org.poten.backend.question.entity.SolveHistory;
 import org.poten.backend.question.repository.QuestionRepository;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -88,5 +90,40 @@ public class QuestionService {
                 .sorted((a, b) -> b.getDate().compareTo(a.getDate()))
                 .collect(Collectors.toList());
     }
+
+
+    @Transactional(readOnly = true)
+    public List<QuestionTopicResponse> findLatestIncorrectByTopic(User user) {
+        if (user == null) throw new CustomException(GlobalErrorCode.USER_NOT_FOUND);
+
+        List<Question> questions = questionRepository.findByUser(user);
+
+        List<SolveHistory> latestIncorrect = solveHistoryRepository
+                .findLatestIncorrectSolveHistories(user, questions);
+
+        Map<Question, SolveHistory> shMap = latestIncorrect.stream()
+                .collect(Collectors.toMap(SolveHistory::getQuestion, Function.identity()));
+
+
+        Map<String, List<Question>> grouped = questions.stream()
+                .filter(shMap::containsKey)
+                .collect(Collectors.groupingBy(q -> q.getTopic() == null ? "미지정" : q.getTopic()));
+
+        return grouped.entrySet().stream()
+                .map(entry -> {
+                    List<QuestionDto> dtos = entry.getValue().stream()
+                            .sorted((a, b) -> shMap.get(b).getCreatedAt()
+                                    .compareTo(shMap.get(a).getCreatedAt()))
+                            .map(q -> QuestionDto.from(q, Optional.of(shMap.get(q))))
+                            .collect(Collectors.toList());
+                    return QuestionTopicResponse.builder()
+                            .topic(entry.getKey())
+                            .questions(dtos)
+                            .build();
+                })
+                .sorted(Comparator.comparing(QuestionTopicResponse::getTopic))
+                .collect(Collectors.toList());
+    }
+
 
 }
