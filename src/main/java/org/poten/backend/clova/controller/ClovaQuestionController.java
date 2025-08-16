@@ -98,4 +98,44 @@ public class ClovaQuestionController {
         }
     }
 
+    @PostMapping("/question/similar")
+    public List<QuestionDto> generateAndSaveSimilarQuestion(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @RequestParam(value = "example_question_file", required = false) MultipartFile exampleQuestionFile,
+            @RequestParam(value = "user_content_file", required = false) MultipartFile userContentFile,
+            @RequestParam(value = "example_question_text", required = false) String exampleQuestionText,
+            @RequestParam(value = "user_content_text", required = false) String userContentText) {
+
+        String exampleQuestion = getTextFromInput(exampleQuestionFile, exampleQuestionText);
+        String userContent = getTextFromInput(userContentFile, userContentText);
+
+        User user = null;
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            if (jwtProvider.validateToken(token)) {
+                String loginId = jwtProvider.getLoginIdFromToken(token);
+                user = userRepository.findByLoginId(loginId)
+                        .orElseThrow(() -> new IllegalArgumentException("user not found"));
+            } else {
+                throw new IllegalArgumentException("Invalid token");
+            }
+        }
+
+        return clovaQuestionService.generateAndSaveSimilarQuestion(exampleQuestion, userContent, user);
+    }
+
+    private String getTextFromInput(MultipartFile file, String text) {
+        if (file != null && !file.isEmpty()) {
+            OcrResponseDto ocrResponse = clovaOcrService.extractTextFromImage(file);
+            if (ocrResponse == null || ocrResponse.getFullText() == null || ocrResponse.getFullText().isBlank()) {
+                throw new GenerateByOcrAndSaveQuestionException(GenerateByOcrAndSaveQuestionErrorCode.EXTRACTED_TEXT_EMPTY);
+            }
+            return ocrResponse.getFullText();
+        } else if (text != null && !text.isBlank()) {
+            return text;
+        } else {
+            throw new IllegalArgumentException("Either a file or a text must be provided.");
+        }
+    }
+
 }
