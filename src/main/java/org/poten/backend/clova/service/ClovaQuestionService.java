@@ -247,4 +247,106 @@ public class ClovaQuestionService {
             super(errorCode);
         }
     }
+
+    @Transactional
+    public List<QuestionDto> generateAndSaveSimilarQuestion(String exampleQuestion, String userContent, User user) {
+        String systemContent = getSimilarQuestionSystemContent();
+        String requestBody = createClovaSimilarRequestBody(exampleQuestion, userContent, systemContent);
+
+        Request request = new Request.Builder()
+                .url(clovaProperty.getUrl())
+                .header("Authorization", "Bearer " + clovaProperty.getKey())
+                .header("X-NCP-CLOVASTUDIO-REQUEST-ID", clovaProperty.getId())
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .post(RequestBody.create(requestBody, MediaType.parse("application/json")))
+                .build();
+
+        try (Response response = createRequest(request)) {
+            if (!response.isSuccessful()) {
+                throw new IOException("Unexpected code " + response);
+            }
+            if (response.body() == null) {
+                throw new IOException("Response body is null");
+            }
+            String responseBody = response.body().string();
+
+            com.fasterxml.jackson.databind.JsonNode rootNode = objectMapper.readTree(responseBody);
+            String content = rootNode.path("result").path("message").path("content").asText();
+            String jsonContent = content.substring(content.indexOf("["), content.lastIndexOf("]") + 1);
+
+            List<QuestionDto> questionDtos = objectMapper.readValue(jsonContent, new com.fasterxml.jackson.core.type.TypeReference<List<QuestionDto>>() {});
+
+            List<Question> savedQuestions = saveQuestions(questionDtos, user);
+
+            return savedQuestions.stream()
+                    .map(question -> QuestionDto.from(question, Optional.empty()))
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new ClovaQuestionServiceException(ClovaQuestionServiceErrorCode.CLOVA_API_ERROR);
+        }
+    }
+
+    private String createClovaSimilarRequestBody(String exampleQuestion, String userContent, String systemContent) {
+        String userPrompt = String.format("<문제 예시>\n%s\n\n<사용자 정리 내용>\n%s", exampleQuestion, userContent);
+        Message systemMessage = new Message("system", List.of(new Content("text", systemContent)));
+        Message userMessage = new Message("user", List.of(new Content("text", userPrompt)));
+        ClovaRequest clovaRequest = new ClovaRequest(List.of(systemMessage, userMessage));
+        return new OkHttpJsonRequest(clovaRequest).convertRequestToString();
+    }
+
+    public String getSimilarQuestionSystemContent() {
+        return """
+        [역할]
+        너는 사용자가 제공한 두 가지 입력(문제 예시, 사용자 정리 내용)을 바탕으로
+        "정확히 30개의 문제를 생성하는 AI"이다.
+        출제자_경향은 문제 스타일·패턴·유형 비율을 학습하기 위한 용도로만 사용하고,
+        실제 문제의 사실적 근거는 반드시 참고_텍스트에서만 가져와야 한다.
+        참고_텍스트에 없는 지식 창작, 일반 상식, 부정확한 내용 추가는 절대 금지한다.
+        [입력]
+        - 문제 예시 (학습할 스타일 템플릿)
+        - 사용자 정리 내용 (문제의 사실적 근거)
+        [문항 유형]
+        - "type"은 {MULTIPLE_CHOICE, TRUE_FALSE, SHORT_ANSWER} 중 하나.
+        - 출제자_경향에 따라 유형 비율, 난이도, 길이, 표현 습관을 최대한 반영한다.
+        - MULTIPLE_CHOICE:
+          - options는 정확히 4개 문자열.
+          - answer는 options 중 정확히 하나와 일치해야 한다.
+        - TRUE_FALSE:
+          - options는 [].
+          - answer는 "TRUE" 또는 "FALSE".
+        - SHORT_ANSWER:
+          - options는 [].
+          - answer는 참고_텍스트로 유일하게 판별 가능한 짧은 문자열.
+        [작업 순서]
+        1) 참고_텍스트를 분석해 30문항 전체에 공통 적용할 핵심 주제(topic)를 정의한다.
+        2) 출제자_경향을 분석해 "스타일 청사진"을 만든다.
+           - 유형 비율(객관식/주관식/OX 혼합 정도)
+           - 난이도 분포(정의형, 사실형, 추론형, 적용형)
+           - 보기/진술의 표현 패턴(예: '다음 중', '옳지 않은 것은', 번호 표기 등)
+           - 오답 설계 습관(숫자 교란, 유사어, 부정문 등)
+        3) 30문항 생성:
+           - 참고_텍스트의 서두/중간/말미 고르게 반영.
+           - 모든 문항의 "topic"은 동일.
+           - 문항 유형, 톤, 길이, 표현은 스타일 청사진에 맞춘다.
+           - 정답은 참고_텍스트로 단일하게 확정 가능한 것만.
+           - 오답/거짓 진술은 참고_텍스트와 모순되지 않으면서 혼동을 주도록 설계.
+        4) 정답 분포 규칙:
+           - MULTIPLE_CHOICE: 정답 인덱스가 최대한 균등(예: 8/8/7/7)이며 3연속 동일 위치 금지.
+           - TRUE_FALSE: TRUE/FALSE ≈ 1:1(±2 허용), 3연속 동일 금지, 단순 패턴 금지.
+           - SHORT_ANSWER: 중복 답변 금지, 본문 표기와 동일해야 함.
+        5) 최종 출력은 오직 JSON 배열만 출력.
+        [출력 포맷 예시]
+        [
+          {
+            "question": "HTTP는 상태를 저장하지 않는 프로토콜이다.",
+            "type": "TRUE_FALSE",
+            "options": [],
+            "answer": "TRUE",
+            "explanation": "HTTP는 무상태(stateless) 프로토콜로 각 요청이 독립적으로 처리된다.",
+            "topic": "HTTP"
+          }
+        ]
+        """;
+    }
 }
