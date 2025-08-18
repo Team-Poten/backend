@@ -15,9 +15,9 @@ import java.io.IOException;
 public abstract class OkHttpRequest {
 
     private static final OkHttpClient client = new OkHttpClient.Builder()
-        .connectTimeout(180, java.util.concurrent.TimeUnit.SECONDS)
-        .writeTimeout(180, java.util.concurrent.TimeUnit.SECONDS)
-        .readTimeout(180, java.util.concurrent.TimeUnit.SECONDS) // 응답 대기 시간
+        .connectTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+        .writeTimeout(120, java.util.concurrent.TimeUnit.SECONDS)
+        .readTimeout(300, java.util.concurrent.TimeUnit.SECONDS) // 응답 대기 시간
         .build();
 
     public static Response createRequest(Request request) {
