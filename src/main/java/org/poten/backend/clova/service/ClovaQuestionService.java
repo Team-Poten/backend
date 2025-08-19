@@ -6,6 +6,7 @@ import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.poten.backend.clova.dto.request.ClovaMediumRequest;
 import org.poten.backend.clova.dto.request.ClovaRequest;
 import org.poten.backend.clova.dto.request.Content;
 import org.poten.backend.clova.dto.request.Message;
@@ -291,8 +292,8 @@ public class ClovaQuestionService {
         String userPrompt = String.format("<문제 예시>\n%s\n\n<사용자 정리 내용>\n%s", exampleQuestion, userContent);
         Message systemMessage = new Message("system", List.of(new Content("text", systemContent)));
         Message userMessage = new Message("user", List.of(new Content("text", userPrompt)));
-        ClovaRequest clovaRequest = new ClovaRequest(List.of(systemMessage, userMessage));
-        return new OkHttpJsonRequest(clovaRequest).convertRequestToString();
+        ClovaMediumRequest clovaMediumRequest = new ClovaMediumRequest(List.of(systemMessage, userMessage));
+        return new OkHttpJsonRequest(clovaMediumRequest).convertRequestToString();
     }
 
     public String getSimilarQuestionSystemContent() {
