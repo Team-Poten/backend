@@ -10,9 +10,9 @@ import java.util.List;
 public class ClovaRequest {
     private List<Message> messages;
     private double topP = 0.8;
-    private Thinking thinking = Thinking.builder().effort("low").build();
+    private Thinking thinking = Thinking.builder().effort("medium").build();
     private int topK = 60;
-    private int maxCompletionTokens = 5000;
+    private int maxCompletionTokens = 8000;
     private double temperature = 0.7;
     private double repetitionPenalty = 1.0;
     private int seed = (int) (Math.random() * 2000000000) + 1;
